@@ -26,7 +26,14 @@ class urlexError(urllib2.URLError):
     def __str__(self):
         return '<urlopenex error %s>' % self.reason
 
-
+def isiternull(iterator):
+    """Check iterator null or not"""
+    m_iterator = iter(iterator)
+    try:
+        m_iterator.next()
+        return False
+    except StopIteration:
+        return True
 
 if __name__ == '__main__':
     openurlex("http://www..com")
