@@ -103,11 +103,12 @@ class SpiderTopicContent(SpiderAtGTABBS):
 
     def get_subsc_date(self):
         #todo
-        #<a class="s2 b cp" onclick
-        #<a class="s2 b cp" onclick="copyFloorUrl('tpc')" title="复制此楼地址">楼主</a>&nbsp;&nbsp;<span title="2011-03-20 17:07">发表于: 03-20</span> - update date
         pass
 
+    def get_gtaver(self):
+        return "GTA:SA"
 
+class SpiderEngine(SpiderAtGTABBS)
 
 if __name__ == "__main__":
     link_pages = ["http://www.gtabbs.com/bbs-141-%d" % i for i in range(1, 2)]
@@ -118,8 +119,10 @@ if __name__ == "__main__":
             has_attachment = checkcont.detect_attachment()
             name = checkcont.get_name()
             img = checkcont.get_img()
+            ver = checkcont.get_gtaver()
             print "%s\n\
                     link:%s\n\
                     has_attachment:%r\n\
-                    imgs:%r\n" % \
-                    (name, link_topic, has_attachment, img)
+                    imgs:%r\n\
+                    ver:%s\n" % \
+                    (name, link_topic, has_attachment, img, gtaver)
