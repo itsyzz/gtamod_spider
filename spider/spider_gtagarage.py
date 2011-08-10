@@ -1,13 +1,22 @@
 import re
 
+from time import strftime
+
 import urllib2
+
+import modinfo
 
 from modinfospider import Spider
 
 import spiderutils
 
 
+
 class SpiderAtGTAGarage(Spider):
+    pass
+
+
+class SpiderLinkPage(SpiderAtGTAGarage):
     """collect info from www.gtagarage.com"""
     
     def __init__(self, link):
@@ -117,12 +126,53 @@ class SpiderAtGTAGarage(Spider):
         else:
             return "No mod images foud"
 
+def spider_run():
+    print 'Please input crawling range(0 - 20000)'
+    while True:
+        r = raw_input('Input format: min, max\n->')
 
+        if not ',' in r:
+            print 'Please input with specific format'
+            continue
+        
+        st, ed = r.split(',')
+        st, ed = st.strip(), ed.strip()
+        
+        if not (st.isdigit() is True and ed.isdigit() is True and st < ed):
+            print 'Please input with specific format'
+            continue
+
+        links = ['http://www.gtagarage.com/mods/show.php?id=%d'
+                 % i for i in range(int(st), int(ed))]
+        for link in links:
+            spider = SpiderLinkPage(link)
+            mod = modinfo.ModInfo(link)
+            mod.updatekey('site', 'http://www.gtagarage.com')
+            mod.updatekey('authorlink', spider.get_mod_authorlink())
+            mod.updatekey('dldlink', spider.get_mod_dldlink())
+            mod.updatekey('imglink', spider.get_mod_imglink())
+            mod.updatekey('name', spider.get_mod_name())
+            mod.updatekey('type', spider.get_mod_type())
+            mod.updatekey('subtype', spider.get_mod_subtype())
+            mod.updatekey('ver', spider.get_mod_gtaver())
+            mod.updatekey('author', spider.get_mod_author())
+            mod.updatekey('status', spider.get_mod_status())
+            mod.updatekey('date', spider.get_mod_lastupdated())
+            #mod.show()
+        #modinfo.show()
+        modinfo.dump('gtagarage_%s.pkl' % strftime('%Y%m%d%H%M%S'))
+        modinfo.clear()
+        
+        break
+
+            
+    
+    
 
 if __name__ == "__main__":
-    links = [ 'http://www.gtagarage.com/mods/show.php?id=%d' % index for index in range(1, 4)]
+    links = [ 'http://www.gtagarage.com/mods/show.php?id=%d' % index for index in range(0)]
     for link in links:
-        spider = SpiderAtGTAGarage(link)
+        spider = SpiderLinkPage(link)
         mod_authorlink = spider.get_mod_authorlink()
         mod_author = spider.get_mod_author()
         mod_dldlink = spider.get_mod_dldlink()

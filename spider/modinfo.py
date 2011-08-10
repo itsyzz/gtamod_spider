@@ -28,7 +28,7 @@ import os.path
 
 _modinfo = {}
 
-__all__ = ["ModInfo", "show", "dump", "load"]
+__all__ = ["ModInfo", "show", "dump", "load", "clear"]
 
 
 class ModInfo(object):
@@ -75,15 +75,15 @@ def show():
     """
     print _modinfo
 
-def dump(fn):
+def dump(fielname):
     """
-    Dump data to %curdir\data\%fn
+    Dump data to %curdir\data\%fielname
     """
     if os.path.exists('data') is not True:
         os.mkdir('data')
 
     try:
-        output = open('data\%s' % fn, 'wb')
+        output = open('data\%s' % fielname, 'wb')
     except IOError as errinfo:
         print 'Dump failed: %s' % errinfo
         return
@@ -92,15 +92,15 @@ def dump(fn):
         cPickle.dump(_modinfo, output , cPickle.HIGHEST_PROTOCOL)
 
 
-def load(fn):
+def load(fielname):
     """
-    Load data from %curdir\data\%fn
+    Load data from %curdir\data\%fielname
     """
     if os.path.exists('data') is not True:
         os.mkdir('data')
 
     try:
-        inload = open('data\%s' % fn, 'rb')
+        inload = open('data\%s' % fielname, 'rb')
     except IOError as errinfo:
         print 'Load data failed: %s' % errinfo
         return ''
@@ -108,6 +108,12 @@ def load(fn):
     with inload:
         collection_data = cPickle.load(inload)
     return collection_data
+
+def clear():
+    """
+    Clear stored data, used after dumping data.
+    """
+    _modinfo = {}
 
 
 def _showhelp():
@@ -128,12 +134,13 @@ def _test():
     x.remove()
     del x
     show()
+    clear()
     
 
 
 if __name__ == '__main__':
     _showhelp()
-    _test()
+    #_test()
 
     
     
