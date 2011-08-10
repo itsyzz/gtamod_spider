@@ -127,7 +127,8 @@ class SpiderLinkPage(SpiderAtGTAGarage):
             return "No mod images foud"
 
 def spider_run():
-    print 'Please input crawling range(0 - 20000)'
+    print 'Crawling at gtagarage'
+    print 'Please input crawling range/index(Recommendation: 0 - 20000)'
     while True:
         r = raw_input('Input format: min, max\n->')
 
@@ -158,19 +159,19 @@ def spider_run():
             mod.updatekey('author', spider.get_mod_author())
             mod.updatekey('status', spider.get_mod_status())
             mod.updatekey('date', spider.get_mod_lastupdated())
+            print 'Collected: %s' % link
             #mod.show()
         #modinfo.show()
         modinfo.dump('gtagarage_%s.pkl' % strftime('%Y%m%d%H%M%S'))
         modinfo.clear()
-        
+        print 'Collect action at gtagarage finished, data stored.'
         break
 
             
-    
-    
-
-if __name__ == "__main__":
-    links = [ 'http://www.gtagarage.com/mods/show.php?id=%d' % index for index in range(0)]
+def _test():
+    # Please change range
+    links = [ 'http://www.gtagarage.com/mods/show.php?id=%d'
+              % index for index in range(0)]
     for link in links:
         spider = SpiderLinkPage(link)
         mod_authorlink = spider.get_mod_authorlink()
@@ -184,4 +185,10 @@ if __name__ == "__main__":
         mod_type = spider.get_mod_type()
         mod_subtype = spider.get_mod_subtype()
         print "\tMod Name:%s - suitVersion:%s at:%s/%s\r\n\t\tAuthor:%s(%s)\r\n\t\tstatus:%s\r\n\t\tlastupdated:%s\r\n\t\tdldlink:%s\r\n\t\timg:%r"\
-              % (mod_name, mod_gtaver, mod_type, mod_subtype, mod_author, mod_authorlink, mod_status, mod_lastupdated, mod_dldlink, mod_imglink)
+              % (mod_name, mod_gtaver,mod_type, mod_subtype,
+                 mod_author, mod_authorlink, mod_status, mod_lastupdated,
+                 mod_dldlink, mod_imglink)    
+
+if __name__ == "__main__":
+    _test()
+
