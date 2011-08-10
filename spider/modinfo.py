@@ -21,6 +21,11 @@ Misc variables:
 
 import cPickle
 
+import os
+
+import os.path
+
+
 _modinfo = {}
 
 __all__ = ["ModInfo", "show", "dump", "load"]
@@ -70,20 +75,31 @@ def show():
     """
     print _modinfo
 
-def dump():
+def dump(fn):
     """
-    Dump data to current dictionary in collection.pkl
+    Dump data to %curdir\data\%fn
     """
-    output = open('collection.pkl', 'wb')
+    if os.path.exists('data') is not True:
+        os.mkdir('data')
+        
+    output = open('data\%s' % fn, 'wb')
     with output:
         cPickle.dump(_modinfo, output , cPickle.HIGHEST_PROTOCOL)
 
 
-def load():
+def load(fn):
     """
-    Load data from collection.pkl
+    Load data from %curdir\data\%fn
     """
-    inload = open('collection.pkl', 'rb')
+    if os.path.exists('data') is not True:
+        os.mkdir('data')
+
+    try:
+        inload = open('data\%s' % fn, 'rb')
+    except IOError as errinfo:
+        print 'Load data failed: %s' % errinfo
+        return ''
+        
     with inload:
         collection_data = cPickle.load(inload)
     return collection_data
@@ -103,14 +119,17 @@ def _test():
     x.removekey('unexist')
     x.removekey('name')
     x.show()
+    show()
     x.remove()
     del x
+    show()
+    
 
 
 if __name__ == '__main__':
     _showhelp()
-    _test() 
-    
+    _test()
+
     
     
     
