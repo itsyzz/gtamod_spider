@@ -26,11 +26,10 @@ class urlexError(urllib2.URLError):
     def __str__(self):
         return '<urlopenex error %s>' % self.reason
 
-def fpause():
+def pause():
     while raw_input('Press Enter to continue...'):
         pass
-    
-pause = fpause()
+
 
 if __name__ == '__main__':
     openurlex("http://www..com")

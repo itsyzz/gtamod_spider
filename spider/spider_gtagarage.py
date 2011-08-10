@@ -136,7 +136,7 @@ def spider_crawl():
 
         if r.count(',') is not 1:
             print 'Please input with specific format: [min], [max]'
-            pause
+            pause()
             continue
         
         st, ed = r.split(',')
@@ -144,7 +144,7 @@ def spider_crawl():
         
         if not (st.isdigit() is True and ed.isdigit() is True and st < ed):
             print 'Please input with specific format: [min], [max]'
-            pause
+            pause()
             continue
 
         links = ['http://www.gtagarage.com/mods/show.php?id=%d'
@@ -173,7 +173,7 @@ def spider_crawl():
         modinfo.clear()
         print 'Collect action at gtagarage finished.'
         print 'Data store at file:', filename
-        pause
+        pause()
         break
 
             

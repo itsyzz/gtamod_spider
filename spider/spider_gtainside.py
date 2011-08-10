@@ -15,6 +15,7 @@ from spiderutils import pause
         
 
 _info = {}
+_info2 = {}
 
 class SpiderAtGTAinside(Spider):
     """Recognize as spider"""
@@ -89,15 +90,16 @@ class SpiderHomePage(SpiderAtGTAinside):
                 , self.cont[sts[i]:eds[i]])
             for type_id, type_orginame in types:
                 global _info
+                global _info2
                 type_name = re.sub(r' \(\d+\)', '', type_orginame)
                 type_link = ("%s%s%s" %
                              (self.info["homepage"],
                               self.info["type_link"],
                               type_id))
-                _info[type_link] = {"ver": self.ver[ver_names[i]],
-                                    "type": type_name,
-                                    "id": type_id}
-                _info[type_id] = type_link
+                _info[type_link] = {'ver': self.ver[ver_names[i]],
+                                    'type': type_name,
+                                    'id': type_id}
+                _info2[type_id] = type_link
 
 
 
@@ -201,13 +203,15 @@ class SpiderTopicPage(SpiderAtGTAinside):
         modinfo.clear()
         print 'Single collect action at gtainside finished.'
         print 'Data store at file:', filename
-        pause
+        pause()
 
 
 def get_type_fromlink(link):
+    global _info
     return _info[link]["type"]
 
 def get_ver_fromlink(link):
+    global _info
     return _info[link]["ver"]
 
 
@@ -219,31 +223,35 @@ class SpiderError(Exception):
         return '<spider error at http://www.gtainisde.com>'
 
 def spider_crawl():
+    print 'Crawling at gtainside homepage...'
+    global _info
+    global _info2
     spider_homepage = SpiderHomePage()
-    homepage.narrow_collect_range()
-    homepage.set_type_info
+    spider_homepage.narrow_collect_range()
+    spider_homepage.set_type_info()
     topics = _info.keys()
     while True:
-        print 'Crawling at gtainsde'
-        print 'There have:'
+        print 'Crawling at gtainside topicpage:'
+        print '    There have:'
         for topic in topics:
-            print '        id:%s (%s/%s) - %s' % (
-                topic['id'], topic['ver'], topic['type'], topic)
-            print 'Please input: [id], [startpage], [endpage]',
-            print '- to start crawl.'
-            print 'Note1: Either page set to 0 will crawl to last page.'
-            print 'Note2: Input \'finish\' will finish the crawl'
-            r = raw_input('->')
+            print '        id:%3d - (%-3s/%-12s)' % (
+                int(_info[topic]['id']), _info[topic]['ver'],
+                _info[topic]['type'])
+        print 'Please input: [id], [startpage], [endpage]',
+        print 'to start crawl.'
+        print 'Note1: Either page set to 0 will crawl to last page.'
+        print 'Note2: Input \'finish\' will finish the crawl'
+        r = raw_input('->')
 
-        if r.startwith('finish'):
+        if r.startswith('finish'):
             print 'Collect action at gtainside finished.'
-            pause
+            pause()
             break
 
         if r.count(',') is not 2:
             print 'Please input with specific format: [id], [start] [end]'
             print 'Note: Either page set to 0 will crawl to last page.'
-            pause
+            pause()
             continue
 
         i, st, ed = r.split(',')
@@ -253,15 +261,15 @@ def spider_crawl():
            or ed.isdigit() is False or st <= ed:
             print 'Please input with specific format: [id], [start] [end]'
             print 'Note: Either page set to 0 will crawl to last page.'
-            pause
+            pause()
             continue
 
-        if _info.has_key(i) is not True:
+        if _info2.has_key(i) is not True:
             print '[Input error] ID:', i, 'do not find.'
-            pause
+            pause()
             continue
 
-        topiclink = _info[i]
+        topiclink = _info2[i]
         ed = 0 if ed == -1 else ed
         spider = SpiderTopicPage(topiclink, ed)
         topicpage.set_maximum_depth()
@@ -286,7 +294,7 @@ def _test():
 
     
 if __name__ == '__main__':
-    _test()
+    spider_crawl()
 
 
 
