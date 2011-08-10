@@ -1,35 +1,117 @@
-class CustomMod(object):
-    """elements which mods must have"""
+"""Mod info collected from web handling.
+
+Mod info collected from web are store in this module.
+Actually, data store in a depth-2 dictionary.
+
+Classes:
+
+    ModInfo
+
+Functions:
+
+    show()
+    dump()
+    load()
+
+Misc variables:
+
+    _modinfo - where mod info be stored at.
     
-    def __init__(self, gta_ver, mod_type, mod_subtype):
-        self.gta_ver = gta_ver
-        self.mod_type = mod_type
-        self.mod_subtype = mod_subtype
+"""
+
+import cPickle
+
+_modinfo = {}
+
+__all__ = ["ModInfo", "show", "dump", "load"]
+
+
+class ModInfo(object):
+    """Series of mod info operation methods provide here.
+    """
     
-    def __del__(self):
-        pass
+    global _modinfo
 
-    def set_gta_ver(self, gta_ver):
-        self.gta_ver = gta_ver
+    def __init__(self, link):
+        """Auto add link data in collection
+        """
+        self.link = link
+        if _modinfo.has_key(link) is False:
+            _modinfo.update({link: {}})
 
-    def set_mod_type(self, mod_type):
-        self.mod_type = mod_type
+    def remove(self):
+        """Remove current mod info from collection
+        """
+        if _modinfo.has_key(self.link) is True:
+            del _modinfo[self.link]       
 
-    def set_mod_subtype(self, mod_subtype):
-        self.mod_subtype = mod_subtype
+    def show(self):
+        """Display collected info from current class
+        """
+        print '{%r: %r}' % (self.link, _modinfo[self.link])
+
+    def updatekey(self, key, value):
+        """Update specific key in current mod info
+        """
+        _modinfo[self.link].update({key: value})
+
+    def removekey(self, key):
+        """Remove specific key from current mod info
+        """
+        if _modinfo[self.link].has_key(key) is True:
+            del _modinfo[self.link][key]
 
 
-class FromWebMod(CustomMod):
-    """elements which mods from web/internet"""
 
-    def __init__(self, orgi_link, dnld_link, img_link, author_link, author):
-        self.orgi_link = orgi_link
-        self.dnld_link = dnld_link
-        self.img_link = img_link
-        self.author_link = author_link
-        self.author = author
 
-    def __del__(self):
-        pass
+def show():
+    """
+    Display all collected info.
+    """
+    print _modinfo
 
-        
+def dump():
+    """
+    Dump data to current dictionary in collection.pkl
+    """
+    output = open('collection.pkl', 'wb')
+    with output:
+        cPickle.dump(_modinfo, output , cPickle.HIGHEST_PROTOCOL)
+
+
+def load():
+    """
+    Load data from collection.pkl
+    """
+    inload = open('collection.pkl', 'rb')
+    with inload:
+        collection_data = cPickle.load(inload)
+    return collection_data
+
+
+def _showhelp():
+    import modinfo
+    help(modinfo)
+    del modinfo
+    
+def _test():
+    x = ModInfo('http://www.test.com')
+    x.updatekey('1', '2')
+    x.updatekey('1', None)
+    x.updatekey('name', 'test')
+    x.removekey('1')
+    x.removekey('unexist')
+    x.removekey('name')
+    x.show()
+    x.remove()
+    del x
+
+
+if __name__ == '__main__':
+    _showhelp()
+    _test() 
+    
+    
+    
+    
+    
