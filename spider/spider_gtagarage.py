@@ -10,6 +10,8 @@ from modinfospider import Spider
 
 import spiderutils
 
+from spiderutils import pause
+
 
 
 class SpiderAtGTAGarage(Spider):
@@ -126,21 +128,23 @@ class SpiderLinkPage(SpiderAtGTAGarage):
         else:
             return "No mod images foud"
 
-def spider_run():
-    print 'Crawling at gtagarage'
-    print 'Please input crawling range/index(Recommendation: 0 - 20000)'
+def spider_crawl():
     while True:
-        r = raw_input('Input format: min, max\n->')
+        print 'Crawling at gtagarage'
+        print 'Please input crawling range/index(Recommendation: 0 - 20000)'
+        r = raw_input('Please input: [min], [max] - to ensure range/index\n->')
 
-        if not ',' in r:
-            print 'Please input with specific format'
+        if r.count(',') is not 1:
+            print 'Please input with specific format: [min], [max]'
+            pause
             continue
         
         st, ed = r.split(',')
         st, ed = st.strip(), ed.strip()
         
         if not (st.isdigit() is True and ed.isdigit() is True and st < ed):
-            print 'Please input with specific format'
+            print 'Please input with specific format: [min], [max]'
+            pause
             continue
 
         links = ['http://www.gtagarage.com/mods/show.php?id=%d'
@@ -149,6 +153,7 @@ def spider_run():
             spider = SpiderLinkPage(link)
             mod = modinfo.ModInfo(link)
             mod.updatekey('site', 'http://www.gtagarage.com')
+            mod.updatekey('link', link)
             mod.updatekey('authorlink', spider.get_mod_authorlink())
             mod.updatekey('dldlink', spider.get_mod_dldlink())
             mod.updatekey('imglink', spider.get_mod_imglink())
@@ -159,12 +164,16 @@ def spider_run():
             mod.updatekey('author', spider.get_mod_author())
             mod.updatekey('status', spider.get_mod_status())
             mod.updatekey('date', spider.get_mod_lastupdated())
+            mod.updatekey('collecttime', strftime('%Y%m%d%H%M%S'))
             print 'Collected: %s' % link
             #mod.show()
         #modinfo.show()
-        modinfo.dump('gtagarage_%s.pkl' % strftime('%Y%m%d%H%M%S'))
+        filename = 'gtagarage_%s.pkl' % strftime('%Y%m%d%H%M%S')
+        modinfo.dump(filename)
         modinfo.clear()
-        print 'Collect action at gtagarage finished, data stored.'
+        print 'Collect action at gtagarage finished.'
+        print 'Data store at file:', filename
+        pause
         break
 
             

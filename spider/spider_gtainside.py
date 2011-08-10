@@ -1,15 +1,20 @@
 import re
 
+from time import strftime
+
 import urllib2
+
+import modinfo
 
 from modinfospider import Spider
 
 import spiderutils
 
+from spiderutils import pause
+
         
 
-info = {}
-modinfo = {}
+_info = {}
 
 class SpiderAtGTAinside(Spider):
     """Recognize as spider"""
@@ -83,15 +88,16 @@ class SpiderHomePage(SpiderAtGTAinside):
                 r'<a href="download.php\?do=cat&id=(\d+)">(.*?)</a>'
                 , self.cont[sts[i]:eds[i]])
             for type_id, type_orginame in types:
-                global info
+                global _info
                 type_name = re.sub(r' \(\d+\)', '', type_orginame)
                 type_link = ("%s%s%s" %
                              (self.info["homepage"],
                               self.info["type_link"],
                               type_id))
-                info[type_link] = {"ver": self.ver[ver_names[i]],
-                                   "type": type_name,
-                                   "id": type_id}
+                _info[type_link] = {"ver": self.ver[ver_names[i]],
+                                    "type": type_name,
+                                    "id": type_id}
+                _info[type_id] = type_link
 
 
 
@@ -123,8 +129,7 @@ class SpiderTopicPage(SpiderAtGTAinside):
                     "Cannot specific maximum page/depth, \
                     please comfirm the code")
             
-    def get_info(self):
-        cur_depth = 0
+    def get_info(self, cur_depth):
         fac_depth = (
             self.maximum_depth
             if (self.depth >= self.maximum_depth or self.depth == 0)
@@ -173,32 +178,37 @@ class SpiderTopicPage(SpiderAtGTAinside):
                  for index in (index.group(1) for index in id_iter_fordld)))
 
             # store info
-            global modinfo
             for mod_infopage in mod_infopage:
-                modinfo[mod_infopage] = {}
-                xup = lambda k, v: modinfo[mod_infopage].update({k: v})
-                xup("link", mod_infopage)
-                xup("name", mod_name.next())
-                xup("author", mod_author.next())
-                xup("date", mod_date.next())
-                xup("img", mod_img.next())
-                xup("dldlink", mod_dldlink.next())
-                try:
-                    xup("ver", get_ver_fromlink(self.link))
-                    xup("type", get_type_fromlink(self.link))
-                except TypeError:
-                    print "Cannot get ver, type"
-                
-            
-        for k, v in modinfo.items():
-            print '\t', k
-            print '\t\t', v
-  
+                mod = modinfo.ModInfo(mod_infopage)
+                mod.updatekey('site', 'http://www.gtainside.com')
+                mod.updatekey('link', mod_infopage)
+                mod.updatekey('name', mod_name.next())
+                mod.updatekey('type', get_type_fromlink(self.link))
+                mod.updatekey('subtype', '')
+                mod.updatekey('ver', get_ver_fromlink(self.link))
+                mod.updatekey('imglink', mod_img.next())
+                mod.updatekey('dldlink', mod_dldlink.next())
+                mod.updatekey('author', mod_name.next())
+                mod.updatekey('date', mod_date.next())
+                mod.updatekey('collecttime', strftime('%Y%m%d%H%M%S'))
+                print 'Collected: %s' % mod_infopage
+                #mod.show()
+                #break
+
+        #modinfo.show()
+        filename = 'gtainside_%s.pkl' % strftime('%Y%m%d%H%M%S')
+        modinfo.dump('gtainside_%s.pkl' % strftime('%Y%m%d%H%M%S'))
+        modinfo.clear()
+        print 'Single collect action at gtainside finished.'
+        print 'Data store at file:', filename
+        pause
+
+
 def get_type_fromlink(link):
-    return info[link]["type"]
+    return _info[link]["type"]
 
 def get_ver_fromlink(link):
-    return info[link]["ver"]
+    return _info[link]["ver"]
 
 
 class SpiderError(Exception):
@@ -208,14 +218,63 @@ class SpiderError(Exception):
     def __str__(self):
         return '<spider error at http://www.gtainisde.com>'
 
+def spider_crawl():
+    spider_homepage = SpiderHomePage()
+    homepage.narrow_collect_range()
+    homepage.set_type_info
+    topics = _info.keys()
+    while True:
+        print 'Crawling at gtainsde'
+        print 'There have:'
+        for topic in topics:
+            print '        id:%s (%s/%s) - %s' % (
+                topic['id'], topic['ver'], topic['type'], topic)
+            print 'Please input: [id], [startpage], [endpage]',
+            print '- to start crawl.'
+            print 'Note1: Either page set to 0 will crawl to last page.'
+            print 'Note2: Input \'finish\' will finish the crawl'
+            r = raw_input('->')
 
+        if r.startwith('finish'):
+            print 'Collect action at gtainside finished.'
+            pause
+            break
 
-if __name__ == '__main__':
+        if r.count(',') is not 2:
+            print 'Please input with specific format: [id], [start] [end]'
+            print 'Note: Either page set to 0 will crawl to last page.'
+            pause
+            continue
+
+        i, st, ed = r.split(',')
+        i, st, ed = i.strip(), st.strip(), ed.stripc()
+                
+        if i.isdigit() is False or st.isdigit() is False \
+           or ed.isdigit() is False or st <= ed:
+            print 'Please input with specific format: [id], [start] [end]'
+            print 'Note: Either page set to 0 will crawl to last page.'
+            pause
+            continue
+
+        if _info.has_key(i) is not True:
+            print '[Input error] ID:', i, 'do not find.'
+            pause
+            continue
+
+        topiclink = _info[i]
+        ed = 0 if ed == -1 else ed
+        spider = SpiderTopicPage(topiclink, ed)
+        topicpage.set_maximum_depth()
+        topicpage.get_info()
+
+        
+
+def _test():
     homepage = SpiderHomePage()
     homepage.narrow_collect_range()
     homepage.set_type_info()
 
-    topicpage_links = info.keys()
+    topicpage_links = _info.keys()
     #for topicpage_link in topicpage_links:
     #    topicpage = SpiderTopicPage(topicpage_link)
     #    topicpage.set_maximum_depth()
@@ -224,6 +283,10 @@ if __name__ == '__main__':
     topicpage = SpiderTopicPage(topicpage_links[10], 2)
     topicpage.set_maximum_depth()
     topicpage.get_info()
+
+    
+if __name__ == '__main__':
+    _test()
 
 
 

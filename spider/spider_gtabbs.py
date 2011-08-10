@@ -11,6 +11,7 @@ from modinfospider import Spider
 
 import spiderutils
 
+from spiderutils import pause
         
 class SpiderAtGTABBS(Spider):
     """Recognize as Spider"""
@@ -111,21 +112,23 @@ class SpiderTopicContent(SpiderAtGTABBS):
     def get_gtaver(self):
         return "GTA:SA"
 
-def spider_run():
-    print 'Crawling at gtabbs'
-    print 'Please input crawling range/pages(Recommendation: 1 - 300)'
+def spider_crawl():
     while True:
-        r = raw_input('Input format: min, max\n->')
+        print 'Crawling at gtabbs'
+        print 'Please input crawling range/pages(Recommendation: 1 - 300)'
+        r = raw_input('Please input: [min], [max] - to ensure range/pages\n->')
 
-        if not ',' in r:
-            print 'Please input with specific format'
+        if r.count(',') is not 1:
+            print 'Please input with specific format: [min], [max]'
+            pause
             continue
         
         st, ed = r.split(',')
         st, ed = st.strip(), ed.strip()
         
         if not (st.isdigit() is True and ed.isdigit() is True and st < ed):
-            print 'Please input with specific format'
+            print 'Please input with specific format: [min], [max]'
+            pause
             continue
 
         link_pages = ['http://www.gtabbs.com/bbs-141-%d'
@@ -136,6 +139,7 @@ def spider_run():
                 spider = SpiderTopicContent(link_topic)
                 mod = modinfo.ModInfo(link_topic)
                 mod.updatekey('site', 'http://www.gtabbs.com')
+                mod.updatekey('link', link_topic)
                 mod.updatekey('has_att', spider.detect_attachment())
                 mod.updatekey('name', spider.get_name())
                 mod.updatekey('type', '')
@@ -144,15 +148,19 @@ def spider_run():
                 mod.updatekey('imglink', spider.get_img())
                 mod.updatekey('publisher', spider.get_publisher())
                 mod.updatekey('date', strftime('%Y%m%d%H%M%S'))
+                mod.updatekey('collecttime', strftime('%Y%m%d%H%M%S'))
                 print 'Collected: %s' % link_topic
                 #mod.show()
                 #break
-            #modinfo.show()
-            modinfo.dump('gtabbs_%s.pkl' % strftime('%Y%m%d%H%M%S'))
-            modinfo.clear()
-            
-        print 'Collect action at gtabbs finished, data stored.'
+                
+        #modinfo.show()
+        filename = 'gtabbs_%s.pkl' % strftime('%Y%m%d%H%M%S')
+        modinfo.dump(filename)
+        print 'Collect action at gtagarage finished.'
+        print 'Data store at file:', filename
+        pause
         break
+        
 
 def _test():
     # Please change range
