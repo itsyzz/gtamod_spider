@@ -1,12 +1,15 @@
-# -*- coding: cp936 -*-
+# -*- coding: gb2312 -*-
 import re
 
+from time import strftime
+
 import urllib2
+
+import modinfo
 
 from modinfospider import Spider
 
 import spiderutils
-
 
         
 class SpiderAtGTABBS(Spider):
@@ -108,10 +111,52 @@ class SpiderTopicContent(SpiderAtGTABBS):
     def get_gtaver(self):
         return "GTA:SA"
 
-class SpiderEngine(SpiderAtGTABBS)
+def spider_run():
+    print 'Crawling at gtabbs'
+    print 'Please input crawling range/pages(Recommendation: 1 - 300)'
+    while True:
+        r = raw_input('Input format: min, max\n->')
 
-if __name__ == "__main__":
-    link_pages = ["http://www.gtabbs.com/bbs-141-%d" % i for i in range(1, 2)]
+        if not ',' in r:
+            print 'Please input with specific format'
+            continue
+        
+        st, ed = r.split(',')
+        st, ed = st.strip(), ed.strip()
+        
+        if not (st.isdigit() is True and ed.isdigit() is True and st < ed):
+            print 'Please input with specific format'
+            continue
+
+        link_pages = ['http://www.gtabbs.com/bbs-141-%d'
+                      % i for i in range(int(st), int(ed))]
+        for link_page in link_pages:
+            link_topics = SpiderTopicPage(link_page).get_topics()
+            for link_topic in link_topics:
+                spider = SpiderTopicContent(link_topic)
+                mod = modinfo.ModInfo(link_topic)
+                mod.updatekey('site', 'http://www.gtabbs.com')
+                mod.updatekey('has_att', spider.detect_attachment())
+                mod.updatekey('name', spider.get_name())
+                mod.updatekey('type', '')
+                mod.updatekey('subtype', '')
+                mod.updatekey('ver', spider.get_gtaver())
+                mod.updatekey('imglink', spider.get_img())
+                mod.updatekey('publisher', spider.get_publisher())
+                mod.updatekey('date', strftime('%Y%m%d%H%M%S'))
+                print 'Collected: %s' % link_topic
+                #mod.show()
+                #break
+            #modinfo.show()
+            modinfo.dump('gtabbs_%s.pkl' % strftime('%Y%m%d%H%M%S'))
+            modinfo.clear()
+            
+        print 'Collect action at gtabbs finished, data stored.'
+        break
+
+def _test():
+    # Please change range
+    link_pages = ["http://www.gtabbs.com/bbs-141-%d" % i for i in range(1, 1)]
     for link_page in link_pages:
         link_topics = SpiderTopicPage(link_page).get_topics()
         for link_topic in link_topics:
@@ -126,3 +171,5 @@ if __name__ == "__main__":
                     imgs:%r\n\
                     ver:%s\n" % \
                     (name, link_topic, has_attachment, img, gtaver)
+if __name__ == "__main__":
+    _test()
