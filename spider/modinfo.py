@@ -81,8 +81,13 @@ def dump(fn):
     """
     if os.path.exists('data') is not True:
         os.mkdir('data')
-        
-    output = open('data\%s' % fn, 'wb')
+
+    try:
+        output = open('data\%s' % fn, 'wb')
+    except IOError as errinfo:
+        print 'Dump failed: %s' % errinfo
+        return
+    
     with output:
         cPickle.dump(_modinfo, output , cPickle.HIGHEST_PROTOCOL)
 
